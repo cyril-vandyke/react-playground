@@ -1,7 +1,4 @@
- /* This is a small game made by following along with the later half of 
-    the Pluralsight course "React.js:Getting Started"
-    To play, go to https://jscomplete.com/repl and paste in this code.*/
- var  possibleCombinationSum = function(arr, n) {
+var  possibleCombinationSum = function(arr, n) {
     if (arr.indexOf(n) >= 0) { return true; }
     if (arr[0] > n) { return false; }
     if (arr[arr.length - 1] > n) {
@@ -111,8 +108,16 @@ const DoneFrame = (props) => {
         	Play Again
         </button>
     	</div>
-    )
-}
+    );
+};
+
+const Timer = (props) => {
+	return(
+  	<div className="text-center">
+      <h5>Time Remaining : {props.timeRemaining}</h5>
+  	</div>
+  );
+};
 
 class Game extends React.Component {
 	static randomNumber = () => 1 + Math.floor(Math.random()*9);
@@ -122,7 +127,8 @@ class Game extends React.Component {
     randomNumberOfStars: Game.randomNumber(),
     answerIsCorrect: null,
     redrawCount: 5,
-    doneStatus: null
+    doneStatus: null,
+    timeRemaining: 60
   });
 	state = Game.initialState();
   resetGame = () => this.setState(Game.initialState());
@@ -153,7 +159,8 @@ class Game extends React.Component {
     	  usedNumbers : prevState.usedNumbers.concat(prevState.selectedNumbers),
         selectedNumbers : [],
         answerIsCorrect : null,
-        randomNumberOfStars: Game.randomNumber()
+        randomNumberOfStars: Game.randomNumber(),
+        timeRemaining: prevState.timeRemaining + 5,
     }), this.updateDoneStatus);
   }
   
@@ -185,8 +192,24 @@ class Game extends React.Component {
       	return {doneStatus: 'Game Over!'};
       }
     });
-  };
+	};
   
+  decrementTimer = () => {
+  	this.setState({
+    	timeRemaining: this.state.timeRemaining - 1
+    });
+    if(this.state.timeRemaining === 0)
+    {
+    	this.setState({
+      	doneStatus : 'Out of time!'
+      });
+    }
+  }
+  
+  componentDidMount() {
+  	this.timer = setInterval(this.decrementTimer,1000);
+  }
+
   render() {
   	const { 
       selectedNumbers,
@@ -194,9 +217,10 @@ class Game extends React.Component {
       randomNumberOfStars, 
       answerIsCorrect,
       redrawCount,
-      doneStatus
+      doneStatus,
+      timeRemaining
     } = this.state;
-    
+     
     return (
       <div className="container">
         <h3>Play Nine</h3>
@@ -215,10 +239,13 @@ class Game extends React.Component {
         <br />
         {doneStatus ? 
         	<DoneFrame doneStatus={doneStatus} resetGame={this.resetGame}/> :
-          <Numbers selectedNumbers={selectedNumbers}
+          <div><Numbers selectedNumbers={selectedNumbers}
           selectNumber={this.selectNumber}
           usedNumbers={usedNumbers}/>
-        }    
+          <br/>
+        	<Timer timeRemaining = {timeRemaining} />
+          </div>
+        }
       </div>
     );
   }
